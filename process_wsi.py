@@ -235,7 +235,7 @@ if __name__ == "__main__":
     
 
     #slides = glob.glob("/home/nikolas/projects/MitosisDetector/data/test_examples/*.ndpi")
-    export_location = '/hpc/dla_patho/data/mitosis_validation/mitosis_results/'
+    export_location = '/hpc/dla_patho/data/mitosis_validation/mitosis_results_retinaNet/'
     slides_location = '/hpc/dla_patho/data/mitosis_validation/WSI/'
 
     slides = glob.glob(os.path.join(slides_location, '*.ndpi'))
@@ -266,12 +266,12 @@ if __name__ == "__main__":
     #path_weights_npz = "./weights/weights_model_CA_DANN.npz"  # -- Operating Point: 0.816
     #operatingPoint_threshold = 0.816
     
-    path_weights_npz = "weights/weights_model_8rotGCNN_15AL.npz" #-- Operating Point: 0.647
-    operatingPoint_threshold = 0.793
+    # path_weights_npz = "weights/weights_model_8rotGCNN_15AL.npz" #-- Operating Point: 0.647
+    # operatingPoint_threshold = 0.793
 
     start_time = time.time()
     print("\n Begin analysis")
-    print("Weights: {}".format(path_weights_npz))    
+    # print("Weights: {}".format(path_weights_npz))    
     
     # logging.info("\n Begin analysis")
     # logging.info("Weights: {}".format(path_weights_npz))    
@@ -294,7 +294,7 @@ if __name__ == "__main__":
     # for slide in slides:
     #     slide_time = time.time() - start_time     
     
-    analyze_wholeslides(path_weights_npz, slides, 1024, export_location)
+    analyze_wholeslides(slides, 1024, export_location)
     elapsed_time = time.time() - start_time
     print("Total time for analysis:  {}".format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time))))
 
