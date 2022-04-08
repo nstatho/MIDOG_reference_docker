@@ -27,8 +27,8 @@ import pickle
 def load_model():
     
     path_model = "./model_weights/RetinaNetDA.pth"
-    size = 512
-    batchsize = 10
+    size = 256
+    batchsize = 20
     detect_thresh = 0.64
     nms_thresh = 0.4
     level = 0
@@ -79,56 +79,6 @@ def find_main_tissue(slide):
 
     return final_mask, l
 
-def split_tissue(wholeslide, patch_size):
-    # Returns a mask of the detected tissue
-    # magnification is max_level-3 e.g. if 10 levels then level=7
-    mask, level = find_main_tissue(wholeslide)
-    label_image = label(mask)
-    im_size = wholeslide.level_dimensions[level]
-    rgba_im = wholeslide.read_region((0, 0), level, im_size)
-
-    #fig, ax = plt.subplots(figsize=(10, 6))
-    #ax.imshow(rgba_im)
-
-    tissue_rectangles = []
-
-
-    for region in regionprops(label_image):
-        # rectangles.append(region.bbox)
-        minr, minc, maxr, maxc = region.bbox
-        tissue_rectangles.append([minr, minc, maxr, maxc])
-        #ax.add_patch(tissue_rectangles)
-
-    #ax.set_axis_off()
-    #plt.tight_layout()
-    #plt.draw()
-
-    downsample = wholeslide.level_downsamples[level]
-
-    # y, x, height, width
-    processing_patches = []
-
-    for rectangle in tissue_rectangles:
-        # convert rectangle coordinates to 40x coordinates
-        minr, minc, maxr, maxc = list(map(lambda x: x * int(downsample), rectangle))
-
-        # in this whole block we divide the rectangle into subrectangles
-        # that has a maximum width x height of patch_size x patch_size
-        for r in range(minr, maxr, patch_size):
-            if r+patch_size > maxr:
-                tile_size_r = maxr-r
-            else:
-                tile_size_r = patch_size
-            for c in range(minc, maxc, patch_size):
-                if c + patch_size > maxc:
-                    tile_size_c = maxc - c
-                else:
-                    tile_size_c = patch_size
-                #logging.debug([r, c, tile_size_r, tile_size_c])
-                processing_patches.append([r, c, tile_size_r, tile_size_c])
-
-    return processing_patches
-
 
 def analyze_wholeslides(weights, slides, patch_size, export_location):
     """
@@ -140,28 +90,6 @@ def analyze_wholeslides(weights, slides, patch_size, export_location):
     :return:
     """
 
-#     path_image = 'test/mitosis_1.jpeg'
-# path_images = Path('test')
-
-
-# input_images = []
-# for image in path_images.glob('*.jpeg'):
-#     input_image = skimage.io.imread(image)
-#     input_images.append(input_image)
-
-# while True:
-#     t1_start = perf_counter()
-#     i = random.randint(0,4)
-#     with torch.inference_mode():
-#         result_boxes = md.process_image(input_images[i])
-#             # perform nms per image:
-#         # print("All computations done, nms as a last step")
-#         result_boxes = nms(result_boxes, nms_thresh)
-#         # print(result_boxes)
-#     t1_stop = perf_counter()
-#     print("Elapsed time:", t1_stop - t1_start)
-    
-    # M = md.Model(path_weights_npz)
     md_model = load_model()    
     nms_thresh = 0.4
 
@@ -170,6 +98,12 @@ def analyze_wholeslides(weights, slides, patch_size, export_location):
         start_slide = time.time()
 
         wholeslide = openslide.OpenSlide(slide)
+        mask, level = find_main_tissue(slide)
+        downsample = wholeslide.level_downsamples[level]
+        x_size = int(((slide.dimensions[0] - patch_size) / stride) + 1)
+        y_size = int(((slide.dimensions[1] - patch_size) / stride) + 1)
+        
+        
         processing_coordinates = split_tissue(wholeslide, patch_size)
         print("Found {} patches".format(len(processing_coordinates)))
         #pool = Pool(MAX_WORKERS)
@@ -211,28 +145,12 @@ def analyze_wholeslides(weights, slides, patch_size, export_location):
         wholeslide.close()
 
 
+def main():
+    pass
     
 
 if __name__ == "__main__":
-    # slide, annotation_savefile = main(sys.argv[1:-1])
-    # slide = main(sys.argv[1])
-    #slides = ["/home/nikolas/projects/deepmel/data/test_data/DM0307-06-00209_53__20130508_192115.isyntax.tif",
-    #          "/home/nikolas/projects/deepmel/data/test_data/DM0319-06-10225_65__20130508_184922.isyntax.tif",
-    #          "/home/nikolas/projects/deepmel/data/test_data/DM0321-06-10793_67__20130508_184410.isyntax.tif",
-    #          "/home/nikolas/projects/deepmel/data/test_data/DM0323-06-11016_68__20130508_184205.isyntax.tif"]
-    #filename = Path("/mnt/T/ICT-Users/nstatho2/research_projects/Mitosis_dataset/test_list/test_slides_natalie.txt")
-    #
-    #slides = []
-    # read the windows paths and convert them to local linux paths -- hack
-    #try:
-    #    with open(filename, 'r') as f:
-    #        for line in f:
-    #            ll = line.rstrip('\n').strip('"')
-    #            slides.append(ll.replace("\\", "/").replace('//ds/data/LA/dla_pacsarchief', '/mnt/pacs'))
-    #except OSError as err:
-    #    print("OS error: {0}".format(err))
-    #f.close()
-    
+
 
     #slides = glob.glob("/home/nikolas/projects/MitosisDetector/data/test_examples/*.ndpi")
     export_location = '/hpc/dla_patho/data/mitosis_validation/mitosis_results_retinaNet/'

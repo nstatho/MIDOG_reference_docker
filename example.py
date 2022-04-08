@@ -3,7 +3,7 @@ import torch
 import torchvision
 import openslide
 from util.nms_WSI import nms
-from detection import MyMitosisDetection
+from process_single import MyMitosisDetection
 import numpy as np
 import skimage.io
 import random
@@ -49,7 +49,7 @@ while True:
             x_1, y_1, x_2, y_2, prediction, score = detection
             coord = tuple(((x_1 + x_2) / 2, (y_1 + y_2) / 2))
             candidates.append(coord)
-        result = [{"point": [x, y, 0]} for x, y in candidates]
+        result = [{"point": [x, y]} for x, y in candidates]
         print(result)
     t1_stop = perf_counter()
     print("Elapsed time:", t1_stop - t1_start)
