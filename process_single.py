@@ -49,6 +49,7 @@ class MyMitosisDetection:
 
     def process_image(self, input_image):
         self.model.eval()
+        assert self.size == input_image.shape[0]
         image_boxes = []                
         cur_patch = input_image.transpose(2,0,1)[0:3] / 255.
         cur_patch = np.expand_dims(cur_patch, axis=0)

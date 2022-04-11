@@ -73,6 +73,11 @@ class MyMitosisDetection:
 
             torch_batch, batch_x, batch_y = self.get_batch(queue_patches)
             class_pred_batch, bbox_pred_batch, domain,_ = self.model(torch_batch)
+            print('class_pred_batch: {}', class_pred_batch)
+            print('bbox_pred_batch: {}', bbox_pred_batch)
+            print('domain: {}', domain)
+            print('_: {}', _)
+
 
             for b in range(torch_batch.shape[0]):
                 x_real = batch_x[b]

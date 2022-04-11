@@ -3,13 +3,11 @@ import torch
 import torchvision
 import openslide
 from util.nms_WSI import nms
-from process_single import MyMitosisDetection
+from detection import MyMitosisDetection
 import numpy as np
 import skimage.io
 import random
 from time import perf_counter
-
-
 
     
 path_model = "./model_weights/RetinaNetDA.pth"
